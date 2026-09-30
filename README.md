@@ -2,4 +2,4 @@
 
 Interactive examples for the course.
 
-- [Adjustable-rate mortgage, worst case, step by step](https://heydarilab.github.io/economic-decision-making/variable-rate-mortgage.html)
+- [Adjustable-rate mortgage, worst case, step by step](https://magicslab.org/economic-decision-making/variable-rate-mortgage.html)

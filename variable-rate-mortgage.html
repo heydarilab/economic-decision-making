@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Adjustable-rate mortgage, worst case, step by step</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F2F4F6; --sheet:#FFFFFF; --ink:#18212C; --muted:#5A6572; --rule:#D3D9E0;
+  --y1:#15707D; --y2:#3A4FBF; --y3:#8340A0; --y4:#99600F; --y5:#B8304A; --pw:#2A7348;
+  --step:var(--y1);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#12171D; --sheet:#1A2129; --ink:#E4E9EE; --muted:#98A3AF; --rule:#2B3440;
+    --y1:#4EC3D0; --y2:#8C9CF2; --y3:#C58BE3; --y4:#E2A955; --y5:#F2798F; --pw:#62C58F;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#12171D; --sheet:#1A2129; --ink:#E4E9EE; --muted:#98A3AF; --rule:#2B3440;
+  --y1:#4EC3D0; --y2:#8C9CF2; --y3:#C58BE3; --y4:#E2A955; --y5:#F2798F; --pw:#62C58F;
+}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:17px;line-height:1.55}
+main{max-width:1100px;margin:0 auto;padding:28px 20px 56px}
+h1{font-size:clamp(1.55rem,3.2vw,2.25rem);line-height:1.15;margin:0 0 .6rem;max-width:30ch;letter-spacing:-.01em}
+.lede{margin:0 0 .4rem;max-width:72ch;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:.4rem 1.1rem;margin:.9rem 0 1.1rem;padding:0;list-style:none;font-size:.92rem}
+.legend li{display:flex;align-items:center;gap:.4rem}
+.sw{display:inline-block;width:.8rem;height:.8rem;border-radius:3px;background:currentColor;flex:none;vertical-align:-1px}
+.legend span.t{color:var(--ink)}
+
+.stage{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+#cf{display:block;width:100%;min-width:760px;height:auto}
+
+.controls{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:.9rem 0 1.5rem}
+button{font:inherit;font-size:.95rem;color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:.45rem .95rem;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+button:focus-visible{outline:3px solid var(--y2);outline-offset:2px}
+button:disabled{opacity:.4;cursor:default}
+.track{display:flex;gap:4px;flex:1 1 240px;min-width:200px}
+.track button{flex:1;height:10px;padding:0;border-radius:5px;border:0;background:var(--rule)}
+.track button.done{background:var(--c)}
+.track button.cur{outline:2px solid var(--c);outline-offset:2px}
+.count{font-size:.9rem;color:var(--muted);min-width:6.5em}
+
+.panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);gap:28px;align-items:start}
+@media (max-width:980px){.panel{grid-template-columns:1fr}}
+.explain h2{font-size:1.4rem;line-height:1.2;margin:0 0 .6rem}
+.explain p{margin:0 0 .75rem;max-width:62ch}
+.note{font-size:.93rem;color:var(--muted)}
+.eqbox{font-family:"Source Serif 4",Georgia,"Times New Roman",serif;font-size:1.13rem;line-height:1.75;
+  background:var(--sheet);border:1px solid var(--rule);border-left:4px solid var(--step);
+  border-radius:4px 10px 10px 4px;padding:.8rem 1rem;margin-top:1rem;overflow-x:auto}
+.eq{white-space:nowrap}
+.eq.num{padding-left:1.4em}
+.eqbox b{font-weight:600}
+.k1{color:var(--y1)} .k2{color:var(--y2)} .k3{color:var(--y3)} .k4{color:var(--y4)} .k5{color:var(--y5)} .kpw{color:var(--pw)}
+
+.pwt{font-family:"Atkinson Hyperlegible",system-ui,sans-serif;font-size:.88rem;border-collapse:collapse;margin:.5rem 0 .2rem;font-variant-numeric:tabular-nums}
+.pwt td,.pwt th{padding:.2rem .7rem .2rem 0;text-align:right;white-space:nowrap;border:0}
+.pwt th{color:var(--muted);font-weight:700;font-size:.8rem}
+.pwt td:first-child,.pwt th:first-child{text-align:left}
+.pwt tr.tot td{border-top:1px solid var(--rule);font-weight:700;padding-top:.35rem}
+.verdict{font-family:"Atkinson Hyperlegible",system-ui,sans-serif;font-size:.98rem;line-height:1.5;margin-top:.7rem;white-space:normal}
+
+.ledger h3{font-size:1rem;margin:0 0 .5rem}
+.tablewrap{overflow-x:auto;border:1px solid var(--rule);border-radius:10px;background:var(--sheet)}
+.ledger table{border-collapse:collapse;width:100%;font-size:.87rem;font-variant-numeric:tabular-nums}
+.ledger th,.ledger td{padding:.45rem .5rem;text-align:right;border-bottom:1px solid var(--rule);white-space:nowrap}
+.ledger th:first-child,.ledger td:first-child{text-align:left}
+.ledger th{font-weight:700;color:var(--muted);font-size:.8rem;vertical-align:bottom}
+.ledger tr:last-child td{border-bottom:0}
+.unk{color:var(--muted);opacity:.45}
+.ledger tfoot td{font-weight:700}
+td.fresh{animation:fresh 1.8s ease-out}
+@keyframes fresh{from{background:color-mix(in srgb,var(--step) 24%,transparent)}to{background:transparent}}
+
+.notes{margin-top:2.2rem;font-size:.93rem;color:var(--muted);max-width:76ch}
+.notes summary{cursor:pointer;color:var(--ink);font-weight:700}
+.notes dl{display:grid;grid-template-columns:max-content 1fr;gap:.3rem 1rem;margin:.8rem 0}
+.notes dt{font-family:"Source Serif 4",Georgia,serif;font-style:italic;color:var(--ink)}
+.notes dd{margin:0}
+
+/* diagram */
+#cf text{fill:currentColor;font-family:"Atkinson Hyperlegible",system-ui,sans-serif}
+.axis{stroke:var(--muted);stroke-width:1.5}
+.axis.dash{stroke-dasharray:4 5}
+.tick{stroke:var(--muted);stroke-width:1.5}
+.tlabel,.ylabel{color:var(--muted)}
+.tlabel{font-size:13px;paint-order:stroke;stroke:var(--sheet);stroke-width:6px;stroke-linejoin:round}
+.ylabel{font-size:13px}
+.rlabel{font-size:17px;font-weight:700}
+.plabel{font-family:"Source Serif 4",Georgia,serif !important;font-style:italic;font-size:17px}
+.pamt{font-size:14px;font-weight:700}
+.alabel text{font-size:13px;font-weight:700}
+.gcount{font-size:13px}
+.fillc{fill:currentColor}
+
+.pay{opacity:0;transform-box:fill-box;transition:opacity .35s ease var(--d),color .6s ease var(--dd),transform .9s cubic-bezier(.5,0,.3,1) var(--fd)}
+.pay.on.fold{transform:translateX(var(--fx));opacity:0}
+.pay.on{opacity:1}
+.pay.discount{color:var(--pw)}
+.rate,.alabel{opacity:0;transition:opacity .5s}
+.rate.on,.alabel.on{opacity:1}
+.parr,.balloon,.pwarr,.varr{opacity:0;transform-box:fill-box;transform:scaleY(.6);
+  transition:opacity .6s ease,transform .9s cubic-bezier(.4,0,.2,1),color .6s ease 1.3s}
+.parr{transform-origin:50% 100%}
+.balloon,.pwarr,.varr{transform-origin:50% 0}
+.parr.on,.balloon.on,.pwarr.on,.varr.on{opacity:1;transform:none}
+.varr.on.slide{transform:translateX(var(--vx));opacity:0}
+.balloon.on.slide{transform:translateX(var(--bx));opacity:0}
+.balloon.discount{color:var(--pw)}
+.ghost{opacity:0;transition:opacity .35s;pointer-events:none}
+.ghost.show{opacity:1}
+.ga{transform-box:fill-box;transform-origin:50% 0;
+  transition:transform .8s cubic-bezier(.5,0,.3,1) var(--gd),opacity .8s ease var(--gd)}
+.ghost.collapse .ga{transform:translateX(var(--dx)) scaleY(.15);opacity:0}
+.gcount{transition:opacity .4s}
+.ghost.collapse .gcount{opacity:0}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none !important;animation:none !important}
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Adjustable-rate mortgage: the worst case, one year at a time</h1>
+    <p class="lede">Economic Decision Making class example. A $500,000 adjustable-rate mortgage (ARM) at 6.5% a year, compounded monthly, over 30 years. The rate resets once a year and can rise by at most one percentage point at each reset. This example takes the worst case: every reset goes up by the full point. The loan is paid off at the end of year 5. Step through to see how each year's payment is found, then what the whole loan is worth to a borrower whose time value of money is 9%.</p>
+    <ul class="legend" aria-label="Color key">
+      <li class="k1"><span class="sw"></span><span class="t">Year 1, 6.5%</span></li>
+      <li class="k2"><span class="sw"></span><span class="t">Year 2, 7.5%</span></li>
+      <li class="k3"><span class="sw"></span><span class="t">Year 3, 8.5%</span></li>
+      <li class="k4"><span class="sw"></span><span class="t">Year 4, 9.5%</span></li>
+      <li class="k5"><span class="sw"></span><span class="t">Year 5, 10.5%</span></li>
+      <li class="kpw"><span class="sw"></span><span class="t">Borrower's 9% TVOM</span></li>
+    </ul>
+  </header>
+
+  <div class="stage">
+    <svg id="cf" viewBox="0 0 1000 372" role="img" aria-label="Cash flow diagram of the loan over 60 months"></svg>
+  </div>
+
+  <div class="controls">
+    <button id="back" type="button">Back</button>
+    <button id="next" type="button" class="primary">Next</button>
+    <button id="play" type="button">Play</button>
+    <span class="count" id="count" aria-live="polite"></span>
+    <div class="track" id="track" aria-label="Jump to step"></div>
+  </div>
+
+  <div class="panel">
+    <section class="explain" id="explain" aria-live="polite">
+      <h2 id="stitle"></h2>
+      <div id="sbody"></div>
+      <div class="eqbox" id="seq"></div>
+    </section>
+    <section class="ledger">
+      <h3>Loan ledger</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Year</th><th>Rate</th><th>Months<br>left</th><th>Owed at<br>start</th><th>Monthly<br>payment</th><th>Owed after<br>12 payments</th></tr></thead>
+          <tbody id="lrows"></tbody>
+          <tfoot id="lfoot"></tfoot>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <details class="notes">
+    <summary>Notation and assumptions</summary>
+    <dl>
+      <dt>P<sub>k</sub></dt><dd>Balance owed at the start of year k. It is the principal the payment is re-priced on that year. P<sub>1</sub> = $500,000.</dd>
+      <dt>A<sub>k</sub></dt><dd>Monthly payment during year k.</dd>
+      <dt>i<sub>k</sub></dt><dd>Monthly rate in year k: the nominal annual rate divided by 12.</dd>
+      <dt>N<sub>k</sub></dt><dd>Months remaining at the start of year k: 360, 348, 336, 324, 312.</dd>
+      <dt>B<sub>60</sub></dt><dd>Balance paid off at month 60, on top of the 60th regular payment.</dd>
+      <dt>j</dt><dd>Borrower's monthly time value of money: 9% ÷ 12 = 0.75%.</dd>
+      <dt>V<sub>k</sub></dt><dd>Worth of year k's 12 payments at the start of year k (month 12(k−1)), discounted at j.</dd>
+      <dt>PW<sub>k</sub></dt><dd>V<sub>k</sub> moved back to month 0.</dd>
+      <dt>PW<sub>B</sub></dt><dd>The payoff B<sub>60</sub> moved back to month 0.</dd>
+      <dt>(A/P, i, N)</dt><dd>i(1+i)<sup>N</sup> / [(1+i)<sup>N</sup> − 1], the capital recovery factor.</dd>
+      <dt>(P/A, i, N)</dt><dd>1 / (A/P, i, N), the present worth of N equal payments.</dd>
+      <dt>(P/F, i, n)</dt><dd>(1+i)<sup>−n</sup>, the present worth of a single amount n months away.</dd>
+    </dl>
+    <p>Worst case: the rate rises by its 1-point annual cap at every reset. All rates are nominal annual rates compounded monthly, including the 9% TVOM. Values are computed without rounding intermediate steps, so hand calculations with rounded factors may differ slightly.</p>
+  </details>
+</main>
+
+<script>
+(function(){
+  /* ---------- numbers ---------- */
+  var RATES=[0.065,0.075,0.085,0.095,0.105];
+  var P0=500000, J=0.09/12;
+  function AP(i,n){var g=Math.pow(1+i,n);return i*g/(g-1);}
+  function PA(i,n){return 1/AP(i,n);}
+  function PF(i,n){return Math.pow(1+i,-n);}
+  var Y=[], bal=P0, n=360;
+  RATES.forEach(function(r,idx){
+    var i=r/12, A=bal*AP(i,n), end=A*PA(i,n-12);
+    Y.push({k:idx+1,r:r,i:i,n:n,P:bal,A:A,end:end});
+    bal=end; n-=12;
+  });
+  var B=Y[4].end;
+  var PA12=PA(J,12);
+  Y.forEach(function(y,idx){y.pf=PF(J,12*idx);y.pw=y.A*PA12*y.pf;});
+  var pfB=PF(J,60), pwB=B*pfB;
+  var PWtot=Y.reduce(function(s,y){return s+y.pw;},0)+pwB;
+  var NPW=P0-PWtot;
+
+  function money(x){return '$'+x.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function money0(x){return '$'+Math.round(x).toLocaleString('en-US');}
+  function pct(i){return String(parseFloat((i*100).toFixed(5)));}
+  function rp(r){return (r*100).toFixed(1)+'%';}
+  function sym(L,s,k){return '<span class="k'+k+'"><i>'+L+'</i><sub>'+s+'</sub></span>';}
+  var SUB=['₀','₁','₂','₃','₄','₅'];
+
+  /* ---------- steps ---------- */
+  var steps=[];
+  steps.push({c:'1',title:'The loan',
+    body:'<p>You borrow '+money0(P0)+' today on an ARM at 6.5% a year, compounded monthly, to be repaid in 360 monthly payments. The rate resets at the start of each year, and each reset can raise it by at most 1 percentage point. We plan for the worst case, where every reset hits that cap.</p><p>Each color stands for one interest-rate period. Everything priced at 6.5% is shown in the year 1 color; when the rate changes, the color changes with it.</p>',
+    eq:'<div class="eq">'+sym('P',1,1)+' = '+money(P0)+'</div><div class="eq">'+sym('N',1,1)+' = 360 months</div><div class="eq">'+sym('i',1,1)+' = 6.5% ÷ 12 = '+pct(Y[0].i)+'% per month</div>'});
+  steps.push({c:'1',title:'Year 1: the monthly payment',
+    body:'<p>At signing, nobody knows where future resets will land, so the bank prices the payment as if 6.5% will hold for all 30 years. This payment covers months 1 through 12.</p>',
+    eq:'<div class="eq">'+sym('A',1,1)+' = '+sym('P',1,1)+' (A/P, '+sym('i',1,1)+', 360)</div><div class="eq num">= '+money(P0)+' (A/P, '+pct(Y[0].i)+'%, 360)</div><div class="eq num">= <b class="k1">'+money(Y[0].A)+'</b> per month</div>'});
+  for(var k=2;k<=5;k++){
+    var pv=Y[k-2], cu=Y[k-1];
+    var bodyP, bodyA;
+    if(k===2){
+      bodyP='<p>Twelve payments are made, then the first reset comes in at the cap: up a full point. Before you can price a new payment you need the balance still owed, and you don\'t have it yet.</p><p>Picture the 348 payments you would have kept making under the old plan (dashed). Their present worth, discounted at the old rate '+sym('i',1,1)+', is exactly what\'s left on the loan. That balance becomes the principal of a new 348-month loan.</p><p class="note">Discount at <i>i</i><sub>1</sub>, not <i>i</i><sub>2</sub>: those payments were priced at 6.5%. Tracking the balance month by month gives the same number.</p>';
+      bodyA='<p>Treat '+sym('P',2,2)+' as a fresh loan: 348 months at the new monthly rate. The balance went down, yet the payment goes up, because the higher rate puts more interest into every payment.</p>';
+    }else{
+      bodyP='<p>Same two moves as year 2. First the balance: the '+cu.n+' remaining payments of '+sym('A',k-1,k-1)+', discounted at the rate they were priced at, '+sym('i',k-1,k-1)+'.</p>';
+      bodyA='<p>Then a new payment on '+sym('P',k,k)+' at the new rate '+sym('i',k,k)+', spread over the '+cu.n+' months left.</p>'+(k===5?'<p class="note">This is the last rate change in the example.</p>':'');
+    }
+    steps.push({c:String(k),kind:'P',k:k,
+      title:(k===2?'First reset: rate rises to 7.5%. What do you still owe?':'Start of year '+k+': reset at the cap, rate rises to '+rp(cu.r)),
+      body:bodyP,
+      eq:'<div class="eq">'+sym('P',k,k)+' = '+sym('A',k-1,k-1)+' (P/A, '+sym('i',k-1,k-1)+', '+cu.n+')</div><div class="eq num">= '+money(pv.A)+' (P/A, '+pct(pv.i)+'%, '+cu.n+')</div><div class="eq num">= <b class="k'+k+'">'+money(cu.P)+'</b> still owed</div>'});
+    steps.push({c:String(k),kind:'A',k:k,
+      title:'Year '+k+': the new monthly payment',
+      body:bodyA,
+      eq:'<div class="eq">'+sym('i',k,k)+' = '+rp(cu.r)+' ÷ 12 = '+pct(cu.i)+'% per month</div><div class="eq">'+sym('A',k,k)+' = '+sym('P',k,k)+' (A/P, '+sym('i',k,k)+', '+cu.n+')</div><div class="eq num">= '+money(cu.P)+' (A/P, '+pct(cu.i)+'%, '+cu.n+')</div><div class="eq num">= <b class="k'+k+'">'+money(cu.A)+'</b> per month</div>'});
+  }
+  steps.push({c:'5',title:'End of year 5: pay off the loan',
+    body:'<p>At month 60 you make the regular payment and hand back whatever is still owed. The balance comes from the same idea as before: the present worth of the 300 payments you would have kept making at year 5\'s rate.</p>',
+    eq:'<div class="eq">'+sym('B',60,5)+' = '+sym('A',5,5)+' (P/A, '+sym('i',5,5)+', 300)</div><div class="eq num">= '+money(Y[4].A)+' (P/A, '+pct(Y[4].i)+'%, 300)</div><div class="eq num">= <b class="k5">'+money(B)+'</b></div><div class="eq" style="margin-top:.4rem">Paid at month 60: '+sym('A',5,5)+' + '+sym('B',60,5)+' = '+money(Y[4].A+B)+'</div>'});
+  var sign=NPW>=0?'+':'−';
+  var PWpay=Y.reduce(function(t,y){return t+y.pw;},0);
+  Y.forEach(function(y){y.V=y.A*PA12;});
+  function f6(x){return x.toFixed(6);}
+  function vs(k){return '<span class="k'+k+'"><i>V</i><sub>'+k+'</sub></span>';}
+  function pws(k){return '<span class="k'+k+'"><i>PW</i><sub>'+k+'</sub></span>';}
+  // 11: switch to your rate
+  var cfRows='';
+  Y.forEach(function(y){cfRows+='<tr><td>'+sym('A',y.k,y.k)+'</td><td>'+(12*(y.k-1)+1)+'–'+(12*y.k)+'</td><td>'+money(y.A)+' each</td></tr>';});
+  cfRows+='<tr><td>'+sym('B',60,5)+'</td><td>60</td><td>'+money(B)+'</td></tr>';
+  steps.push({c:'pw',title:'Now switch to your rate',
+    body:'<p>So far every rate was the bank\'s. The question now is different: what is this stream of payments worth to you today?</p><p>Your time value of money (TVOM) is 9% a year, compounded monthly. Every cash flow gets discounted at your monthly rate <i>j</i>, no matter which rate the bank used to set it.</p><p>We\'ll get there in three moves: turn each year\'s 12 payments into one amount, bring those amounts back to month 0, then do the same for the payoff.</p>',
+    eq:'<div class="eq"><i>j</i> = 9% ÷ 12 = 0.75% per month</div><table class="pwt"><thead><tr><th>Cash flow</th><th>Months</th><th>Amount</th></tr></thead><tbody>'+cfRows+'</tbody></table>'});
+  // 12: each year to one amount
+  var vRows='';
+  Y.forEach(function(y){vRows+='<tr><td>'+vs(y.k)+'</td><td>'+(12*(y.k-1))+'</td><td>'+money(y.A)+'</td><td>'+money(y.V)+'</td></tr>';});
+  steps.push({c:'pw',title:'Move 1: each year\'s payments as one amount',
+    body:'<p>Within a year the payment doesn\'t change, so each year\'s 12 payments are an ordinary annuity. The factor (P/A, <i>j</i>, 12) turns them into one amount at the start of that year, one month before the year\'s first payment.</p><p>Call that amount <i>V<sub>k</sub></i>: the worth of year <i>k</i>\'s payments at month 12(<i>k</i>−1).</p><p class="note">The factor is the same every year: always 12 payments, always at <i>j</i>.</p>',
+    eq:'<div class="eq">(P/A, 0.75%, 12) = '+f6(PA12)+'</div><div class="eq">'+vs(1)+' = '+sym('A',1,1)+' (P/A, <i>j</i>, 12)</div><div class="eq num">= '+money(Y[0].A)+' × '+f6(PA12)+' = <b class="k1">'+money(Y[0].V)+'</b></div>'+
+       '<table class="pwt"><thead><tr><th></th><th>At month</th><th><i>A<sub>k</sub></i></th><th><i>V<sub>k</sub></i></th></tr></thead><tbody>'+vRows+'</tbody></table>'});
+  // 13: back to month 0
+  var pRows='';
+  Y.forEach(function(y){pRows+='<tr><td>'+pws(y.k)+'</td><td>'+(12*(y.k-1))+'</td><td>'+money(y.V)+'</td><td>'+f6(y.pf)+'</td><td>'+money(y.pw)+'</td></tr>';});
+  pRows+='<tr class="tot"><td colspan="4">PW of all 60 payments</td><td class="kpw">'+money(PWpay)+'</td></tr>';
+  steps.push({c:'pw',title:'Move 2: bring each amount back to month 0',
+    body:'<p>Each '+'<i>V<sub>k</sub></i>'+' is a single amount sitting at month <i>n</i> = 12(<i>k</i>−1). One (P/F) factor moves it to month 0. '+vs(1)+' is already there, so its factor is 1.</p>',
+    eq:'<div class="eq"><i>PW<sub>k</sub></i> = <i>V<sub>k</sub></i> (P/F, <i>j</i>, <i>n</i>),  <i>n</i> = 12(<i>k</i>−1)</div><div class="eq">'+pws(2)+' = '+money(Y[1].V)+' (P/F, 0.75%, 12) = '+money(Y[1].pw)+'</div>'+
+       '<table class="pwt"><thead><tr><th></th><th><i>n</i></th><th><i>V<sub>k</sub></i></th><th>(P/F, 0.75%, <i>n</i>)</th><th><i>PW<sub>k</sub></i></th></tr></thead><tbody>'+pRows+'</tbody></table>'});
+  // 14: payoff
+  steps.push({c:'pw',title:'Move 3: bring the payoff back too',
+    body:'<p>The payoff is one amount at month 60, so it needs only one factor.</p><p class="note">Most of the loan\'s present worth sits in this single cash flow. Five years of payments retire only a small part of the $500,000.</p>',
+    eq:'<div class="eq"><i>PW</i><sub>B</sub> = '+sym('B',60,5)+' (P/F, <i>j</i>, 60)</div><div class="eq num">= '+money(B)+' × '+pfB.toFixed(7)+'</div><div class="eq num">= <b class="kpw">'+money(pwB)+'</b></div>'});
+  // 15: add it up
+  steps.push({c:'pw',title:'Add it up: is the loan worth it at 9%?',
+    body:'<p>Add the two pieces and compare with the '+money0(P0)+' you receive at month 0.</p>',
+    eq:'<div class="eq">PW = PW of payments + <i>PW</i><sub>B</sub></div><div class="eq num">= '+money(PWpay)+' + '+money(pwB)+' = <b class="kpw">'+money(PWtot)+'</b></div>'+
+       '<div class="eq" style="margin-top:.4rem">Net PW = '+money(P0)+' − '+money(PWtot)+' = <b class="kpw">'+sign+money(Math.abs(NPW))+'</b></div>'+
+       '<div class="verdict">'+(NPW>=0?'The payments are worth less to you than the money you get today, so at a 9% TVOM the loan comes out in your favor, even in the worst case.':'The payments are worth more to you than the money you get today, so at a 9% TVOM the loan costs you more than it gives.')+'</div>'+
+       '<div class="verdict" style="color:var(--muted)">The three moves written as one line:</div><div class="eq">PW = Σ<sub><i>k</i>=1…5</sub> <i>A<sub>k</sub></i> (P/A, <i>j</i>, 12)(P/F, <i>j</i>, 12(<i>k</i>−1)) + '+sym('B',60,5)+' (P/F, <i>j</i>, 60)</div>'});
+
+  /* ---------- diagram ---------- */
+  var AX=170, S=0.022;
+  function X(m){return 50+m*14.5;}
+  function down(x,len,dashed){
+    var y2=AX+len, o=dashed?' opacity=".7"':'';
+    return '<line x1="'+x+'" y1="'+AX+'" x2="'+x+'" y2="'+(y2-5)+'" stroke="currentColor" stroke-width="2"'+(dashed?' stroke-dasharray="3 3"':'')+o+'/>'+
+           '<path d="M'+(x-3.5)+' '+(y2-6)+'L'+(x+3.5)+' '+(y2-6)+'L'+x+' '+y2+'Z" fill="currentColor"'+o+'/>';
+  }
+  function upBroken(x){
+    return '<path d="M'+x+' '+AX+'V112l-5 -3l10 -6l-5 -3V58" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>'+
+           '<path d="M'+(x-4.5)+' 59L'+(x+4.5)+' 59L'+x+' 50Z" fill="currentColor"/>';
+  }
+  function downBroken(x){
+    return '<path d="M'+x+' '+AX+'V250l-5 3l10 6l-5 3V332" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>'+
+           '<path d="M'+(x-4.5)+' 331L'+(x+4.5)+' 331L'+x+' 340Z" fill="currentColor"/>';
+  }
+  function downMid(x){
+    return '<path d="M'+x+' '+AX+'V222l-5 3l10 6l-5 3V278" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>'+
+           '<path d="M'+(x-4.5)+' 277L'+(x+4.5)+' 277L'+x+' 286Z" fill="currentColor"/>';
+  }
+  var BX=X(60)+12;
+  var h='';
+  // rate bands
+  for(var r=1;r<=5;r++){
+    var x1=X(12*(r-1)), x2=X(12*r), mid=(x1+x2)/2;
+    h+='<g class="rate k'+r+'" id="rate'+r+'"><rect class="fillc" x="'+(x1+2)+'" y="'+(AX-8)+'" width="'+(x2-x1-4)+'" height="4" rx="2"/>'+
+       '<text class="rlabel" x="'+mid+'" y="'+(AX-36)+'" text-anchor="middle">'+rp(RATES[r-1])+'</text>'+
+       '<text class="ylabel" x="'+mid+'" y="'+(AX-18)+'" text-anchor="middle">Year '+r+'</text></g>';
+  }
+  // axis
+  h+='<line class="axis" x1="'+(X(0)-12)+'" y1="'+AX+'" x2="'+X(60)+'" y2="'+AX+'"/>';
+  h+='<line class="axis dash" x1="'+X(60)+'" y1="'+AX+'" x2="994" y2="'+AX+'"/>';
+  h+='<text class="ylabel" x="992" y="'+(AX-18)+'" text-anchor="end">to month 360</text>';
+  // payments
+  for(var m=1;m<=60;m++){
+    var yk=Math.ceil(m/12), len=Y[yk-1].A*S;
+    h+='<g class="pay k'+yk+'" id="pay'+m+'" style="--d:'+(((m-1)%12)*45)+'ms;--dd:'+(m*22)+'ms;--fd:'+(((m-1)%12)*30)+'ms;--fx:'+(X(12*(yk-1))-X(m))+'px">'+down(X(m),len,false)+'</g>';
+  }
+  // payment labels
+  for(var a=1;a<=5;a++){
+    var lx=(X(12*(a-1))+X(12*a))/2, ly=AX+Y[a-1].A*S+19;
+    h+='<g class="alabel k'+a+'" id="alab'+a+'"><text x="'+lx+'" y="'+ly+'" text-anchor="middle">A'+SUB[a]+' '+money0(Y[a-1].A)+'</text></g>';
+  }
+  // ghosts: remaining payments under the old plan
+  for(var g=2;g<=6;g++){
+    var old=Y[g-2], glen=old.A*S, tx=(g<=5?X(12*(g-1)):BX), gh='<g class="ghost" id="ghost'+g+'">', idx=0;
+    for(var gm=12*(g-1)+1;gm<=60;gm++){
+      var gx=X(gm);
+      gh+='<g class="ga k'+(g-1)+'" style="--dx:'+(tx-gx)+'px;--gd:'+(idx*12)+'ms">'+down(gx,glen,true)+'</g>'; idx++;
+    }
+    for(var t=0;t<7;t++){
+      var cx=942+t*7;
+      gh+='<g class="ga k'+(g-1)+'" style="--dx:'+(tx-cx)+'px;--gd:'+(idx*12)+'ms">'+down(cx,glen,true)+'</g>'; idx++;
+    }
+    var cnt=(g<=5?Y[g-1].n:300);
+    gh+='<text class="gcount k'+(g-1)+'" x="992" y="'+(AX+glen+20)+'" text-anchor="end">'+cnt+' payments</text></g>';
+    h+=gh;
+  }
+  // loan arrow
+  h+='<g class="parr on k1" id="loan">'+upBroken(X(0))+'<text class="plabel" x="'+(X(0)-12)+'" y="22">P₁</text><text class="pamt" x="'+(X(0)-12)+'" y="40">'+money0(P0)+'</text></g>';
+  // balance arrows
+  for(var p=2;p<=5;p++){
+    var px=X(12*(p-1));
+    h+='<g class="parr k'+p+'" id="P'+p+'">'+upBroken(px)+'<text class="plabel" x="'+px+'" y="22" text-anchor="middle">P'+SUB[p]+'</text><text class="pamt" x="'+px+'" y="40" text-anchor="middle">'+money0(Y[p-1].P)+'</text></g>';
+  }
+  // payoff
+  for(var v=1;v<=5;v++){var vx=X(12*(v-1));h+='<g class="varr kpw" id="V'+v+'" style="--vx:'+(X(0)-vx)+'px">'+downMid(vx)+'<text class="pamt k'+v+'" x="'+vx+'" y="322" text-anchor="'+(v===1?'start':'middle')+'">V'+SUB[v]+' '+money0(Y[v-1].A*PA12)+'</text></g>';}
+  h+='<g class="balloon k5" id="balloon" style="--bx:'+(X(0)-BX)+'px">'+downBroken(BX)+'<text class="pamt" x="'+(BX-10)+'" y="358" text-anchor="end">Payoff B₆₀ '+money0(B)+'</text></g>';
+  // PW arrow
+  h+='<g class="pwarr kpw" id="pwarr">'+downBroken(X(0))+'<text class="pamt" id="pwlabel" x="'+(X(0)+10)+'" y="358"></text></g>';
+  // ticks last so labels sit on top
+  for(var tk=0;tk<=60;tk+=12){
+    h+='<line class="tick" x1="'+X(tk)+'" y1="'+(AX-4)+'" x2="'+X(tk)+'" y2="'+(AX+4)+'"/>';
+    h+='<text class="tlabel" x="'+X(tk)+'" y="302" text-anchor="middle">'+tk+'</text>';
+  }
+  h+='<text class="tlabel" x="992" y="302" text-anchor="end">month</text>';
+  document.getElementById('cf').innerHTML=h;
+
+  /* ---------- state ---------- */
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var timers=[], cur=0, playing=false, playTimer=null;
+  function later(fn,ms){timers.push(setTimeout(fn,ms));}
+  function $(id){return document.getElementById(id);}
+  function tog(el,c,on){el.classList.toggle(c,!!on);}
+  function colorVar(c){return c==='pw'?'var(--pw)':'var(--y'+c+')';}
+
+  var track=$('track');
+  steps.forEach(function(st,i){
+    var b=document.createElement('button');
+    b.type='button'; b.style.setProperty('--c',colorVar(st.c));
+    b.setAttribute('aria-label','Step '+(i+1)+': '+st.title);
+    b.addEventListener('click',function(){stopPlay();go(i);});
+    track.appendChild(b);
+  });
+
+  function cell(val,revealAt,s){
+    if(s<revealAt) return '<td><span class="unk">—</span></td>';
+    return '<td'+(s===revealAt?' class="fresh"':'')+'>'+val+'</td>';
+  }
+  function renderLedger(s){
+    var rows='';
+    Y.forEach(function(y){
+      var k=y.k, pAt=(k===1?0:2*k-2), aAt=2*k-1, eAt=2*k;
+      rows+='<tr><td class="k'+k+'"><span class="sw"></span> <span style="color:var(--ink)">'+k+'</span></td>'+
+        cell(rp(y.r),pAt,s)+cell(y.n,pAt,s)+cell(money(y.P),pAt,s)+cell(money(y.A),aAt,s)+cell(money(y.end),eAt,s)+'</tr>';
+    });
+    $('lrows').innerHTML=rows;
+    var f='';
+    if(s>=10) f+='<tr><td colspan="5">Payoff at month 60</td>'+cell(money(B),10,s)+'</tr>';
+    if(s>=13) f+='<tr><td colspan="5">PW of the 60 payments at 9%</td>'+cell(money(PWpay),13,s)+'</tr>';
+    if(s>=14) f+='<tr><td colspan="5">PW of the payoff at 9%</td>'+cell(money(pwB),14,s)+'</tr>';
+    if(s>=15){
+      f+='<tr><td colspan="5">Total PW at 9%</td>'+cell(money(PWtot),15,s)+'</tr>';
+      f+='<tr><td colspan="5">Net PW to borrower</td>'+cell('<span class="kpw">'+sign+money(Math.abs(NPW))+'</span>',15,s)+'</tr>';
+    }
+    $('lfoot').innerHTML=f;
+  }
+
+  function go(s){
+    timers.forEach(clearTimeout); timers=[];
+    cur=Math.max(0,Math.min(steps.length-1,s));
+    var st=steps[cur], anim=!reduce;
+    document.documentElement.style.setProperty('--step',colorVar(st.c));
+
+    for(var m=1;m<=60;m++){
+      var yk=Math.ceil(m/12), el=$('pay'+m);
+      tog(el,'on',cur>=2*yk-1); tog(el,'discount',cur>=12);
+      if(cur===12&&anim){el.classList.remove('fold');later((function(e){return function(){e.classList.add('fold');};})(el),1100);}
+      else tog(el,'fold',cur>=12);
+    }
+    for(var k=1;k<=5;k++){
+      tog($('rate'+k),'on',cur>=(k===1?0:2*k-2));
+      var al=$('alab'+k); tog(al,'on',cur>=2*k-1&&cur<12);
+      if(cur===12&&anim){al.classList.add('on');later((function(e){return function(){e.classList.remove('on');};})(al),1100);}
+      var ve=$('V'+k);
+      if(cur<12){ve.classList.remove('on','slide');}
+      else if(cur===12){ve.classList.remove('slide'); if(anim){ve.classList.remove('on');later((function(e){return function(){e.classList.add('on');};})(ve),1900);} else ve.classList.add('on');}
+      else if(cur===13&&anim){ve.classList.add('on');ve.classList.remove('slide');later((function(e){return function(){e.classList.add('slide');};})(ve),600);}
+      else {ve.classList.add('on');ve.classList.add('slide');}
+    }
+    function staged(el,atStep){
+      if(cur>atStep){el.classList.add('on');}
+      else if(cur===atStep){ if(anim){el.classList.remove('on');later(function(){el.classList.add('on');},1900);} else el.classList.add('on'); }
+      else el.classList.remove('on');
+    }
+    for(var p=2;p<=5;p++) staged($('P'+p),2*p-2);
+    staged($('balloon'),10);
+    var bl=$('balloon'); tog(bl,'discount',cur>=14);
+    if(cur===14&&anim){bl.classList.remove('slide');later(function(){bl.classList.add('slide');},1500);}
+    else tog(bl,'slide',cur>=14);
+    for(var g=2;g<=6;g++){
+      var ge=$('ghost'+g), at=2*g-2;
+      ge.classList.remove('collapse');
+      if(cur===at){
+        ge.classList.add('show');
+        if(anim) later((function(e){return function(){e.classList.add('collapse');};})(ge),1000);
+      } else ge.classList.remove('show');
+    }
+    var pw=$('pwarr');
+    if(cur===13&&anim){pw.classList.remove('on');later(function(){pw.classList.add('on');},1300);}
+    else tog(pw,'on',cur>=13);
+    var pl=$('pwlabel');
+    if(cur===13) pl.textContent='PW of payments: '+money0(PWpay);
+    else if(cur===14){ if(anim){later(function(){pl.textContent=money0(PWpay)+' + payoff '+money0(pwB);},2200);} else pl.textContent=money0(PWpay)+' + payoff '+money0(pwB); }
+    else if(cur>=15) pl.textContent='PW at 9%: '+money0(PWtot);
+
+    $('stitle').textContent=st.title;
+    $('sbody').innerHTML=st.body;
+    $('seq').innerHTML=st.eq;
+    $('count').textContent='Step '+(cur+1)+' of '+steps.length;
+    $('back').disabled=(cur===0);
+    $('next').disabled=(cur===steps.length-1);
+    Array.prototype.forEach.call(track.children,function(b,i){tog(b,'done',i<=cur);tog(b,'cur',i===cur);});
+    renderLedger(cur);
+  }
+
+  function dwell(i){var s=steps[i];return s.kind==='P'||i>=10?8000:5500;}
+  function stopPlay(){playing=false;clearTimeout(playTimer);$('play').textContent='Play';}
+  function tick(){
+    if(!playing) return;
+    if(cur>=steps.length-1){stopPlay();return;}
+    go(cur+1); playTimer=setTimeout(tick,dwell(cur));
+  }
+  $('play').addEventListener('click',function(){
+    if(playing){stopPlay();return;}
+    playing=true; $('play').textContent='Pause';
+    if(cur>=steps.length-1){go(0);}
+    playTimer=setTimeout(tick,dwell(cur));
+  });
+  $('next').addEventListener('click',function(){stopPlay();go(cur+1);});
+  $('back').addEventListener('click',function(){stopPlay();go(cur-1);});
+  document.addEventListener('keydown',function(e){
+    if(e.target&&(/^(INPUT|TEXTAREA|SELECT)$/).test(e.target.tagName)) return;
+    if(e.key==='ArrowRight'){stopPlay();go(cur+1);}
+    else if(e.key==='ArrowLeft'){stopPlay();go(cur-1);}
+  });
+
+  go(0);
+})();
+</script>
+</body>
+</html>
